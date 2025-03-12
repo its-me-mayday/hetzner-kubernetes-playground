@@ -1,4 +1,4 @@
-resource "null_resource" "install_kubernetes" { 
+resource "null_resource" "install_kubernetes" {
   connection {
     type        = "ssh"
     user        = "root"
@@ -7,13 +7,13 @@ resource "null_resource" "install_kubernetes" {
   }
 
   provisioner "remote-exec" {
- inline = [
+    inline = [
       # Disable swap & configure kernel
       "swapoff -a",
       "sed -i '/ swap / s/^/#/' /etc/fstab",
       "modprobe br_netfilter",
       "echo 'br_netfilter' | tee /etc/modules-load.d/br_netfilter.conf",
-      
+
       # Configure sysctl
       "echo 'net.bridge.bridge-nf-call-iptables = 1' | tee /etc/sysctl.d/k8s.conf",
       "echo 'net.ipv4.ip_forward = 1' | tee -a /etc/sysctl.d/k8s.conf",
@@ -36,7 +36,7 @@ resource "null_resource" "install_kubernetes" {
       "apt-mark hold kubelet kubeadm kubectl",
 
       # Init cluster
-     "kubeadm init --pod-network-cidr=192.168.0.0/16 --apiserver-advertise-address=${hcloud_server.controlplane.ipv4_address} --control-plane-endpoint=${hcloud_server.controlplane.ipv4_address}",
+      "kubeadm init --pod-network-cidr=192.168.0.0/16 --apiserver-advertise-address=${hcloud_server.controlplane.ipv4_address} --control-plane-endpoint=${hcloud_server.controlplane.ipv4_address}",
 
       # Configure root access
       "mkdir -p /root/.kube",
@@ -51,6 +51,6 @@ resource "null_resource" "install_kubernetes" {
       "sleep 30",
       "kubectl get nodes",
       "kubectl get pods -n kube-system"
-    ]  
+    ]
   }
 }
